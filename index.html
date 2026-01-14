@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civil Service Professional Mock Exam (PH)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            user-select: none; /* Prevent copy-pasting */
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .option-card {
+            transition: all 0.2s ease;
+        }
+
+        .option-card:hover:not(.disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .option-card.disabled {
+            cursor: default;
+            opacity: 0.9;
+        }
+
+        /* Immediate Feedback Styles */
+        .option-card.correct-answer {
+            background-color: #d1fae5 !important; /* Green-100 */
+            border-color: #10b981 !important; /* Green-500 */
+            border-width: 2px;
+        }
+
+        .option-card.wrong-answer {
+            background-color: #fee2e2 !important; /* Red-100 */
+            border-color: #ef4444 !important; /* Red-500 */
+            border-width: 2px;
+        }
+
+        .option-card.dimmed {
+            opacity: 0.5;
+            background-color: #f1f5f9;
+        }
+
+        /* Animation for Explanation */
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        .timer-warning {
+            animation: pulse-red 1s infinite;
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        @keyframes pulse-red {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white shadow-lg z-10 flex-shrink-0">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center text-slate-900 font-bold">PH</div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-wide hidden sm:block">CSE PROFESSIONAL REVIEWER</h1>
+                    <p class="text-xs text-slate-400">Civil Service Commission Simulation</p>
+                </div>
+            </div>
+            
+            <div id="timer-display" class="font-mono text-xl bg-slate-800 px-4 py-2 rounded-lg border border-slate-700 flex items-center gap-2 hidden">
+                <i class="far fa-clock"></i>
+                <span id="time-remaining">03:10:00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 relative overflow-hidden flex justify-center items-center p-2 sm:p-4">
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="glass-panel w-full max-w-3xl p-8 rounded-2xl text-center flex flex-col items-center">
+            <div class="mb-6">
+                <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-inner">
+                    <i class="fas fa-file-signature text-blue-600 text-3xl"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">Civil Service Professional Mock Exam</h2>
+                <p class="text-slate-600 max-w-lg mx-auto">
+                    Simulate the actual examination environment with the official 2026 scope. <br>
+                    <span class="text-sm italic text-slate-500">Note: The 20-item Examinee’s Descriptive Questionnaire (EDQ) is skipped.</span>
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left mb-8 w-full">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+                    <div class="absolute right-0 top-0 p-2 opacity-10"><i class="fas fa-list-ol text-6xl"></i></div>
+                    <div class="text-xs text-slate-500 uppercase font-bold mb-1">Total Items</div>
+                    <div class="text-2xl font-bold text-slate-800">150 Questions</div>
+                    <div class="text-xs text-slate-400 mt-1">+20 EDQ (Excluded)</div>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+                    <div class="absolute right-0 top-0 p-2 opacity-10"><i class="fas fa-stopwatch text-6xl"></i></div>
+                    <div class="text-xs text-slate-500 uppercase font-bold mb-1">Time Limit</div>
+                    <div class="text-2xl font-bold text-slate-800">3hr 10min</div>
+                    <div class="text-xs text-slate-400 mt-1">Standard Timing</div>
+                </div>
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative overflow-hidden">
+                    <div class="absolute right-0 top-0 p-2 opacity-10"><i class="fas fa-globe-asia text-6xl"></i></div>
+                    <div class="text-xs text-slate-500 uppercase font-bold mb-1">Language</div>
+                    <div class="text-2xl font-bold text-slate-800">Eng & Fil</div>
+                    <div class="text-xs text-slate-400 mt-1">Bilingual Format</div>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 w-full mb-8 text-left text-sm text-blue-800">
+                <strong class="block mb-2"><i class="fas fa-info-circle mr-1"></i> Coverage Breakdown (Based on Database):</strong>
+                <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 list-disc pl-5">
+                    <li><strong>Verbal:</strong> SVA, Vocabulary, Paragraph Org.</li>
+                    <li><strong>Analytical:</strong> Logic, Analogies, Data Interpretation</li>
+                    <li><strong>Numerical:</strong> Series, Algebra, Word Problems</li>
+                    <li><strong>Gen Info:</strong> Consti, RA 6713, Envi Laws</li>
+                </ul>
+            </div>
+
+            <button onclick="startQuiz()" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-12 rounded-xl transition-all shadow-lg shadow-blue-600/30 w-full max-w-md text-lg flex items-center justify-center gap-2 transform active:scale-95">
+                <span>Start Test Proper</span> <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+
+        <!-- Quiz Interface -->
+        <div id="quiz-interface" class="w-full max-w-6xl h-full flex flex-col hidden">
+            <!-- Progress Bar -->
+            <div class="mb-4 flex items-center justify-between text-sm font-medium text-slate-600 flex-shrink-0 bg-white/50 p-2 rounded-lg">
+                <span class="flex items-center gap-2">
+                    <span class="bg-slate-800 text-white px-2 py-0.5 rounded text-xs font-mono">Q<span id="current-q-num">1</span>/150</span>
+                    <span id="category-badge" class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Verbal Ability</span>
+                </span>
+                <span class="text-xs text-slate-500 hidden sm:inline">Score: <span id="running-score">0</span></span>
+            </div>
+            
+            <div class="w-full bg-slate-200 rounded-full h-1.5 mb-6 flex-shrink-0">
+                <div id="progress-bar" class="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-6 h-full overflow-hidden">
+                <!-- Question Area -->
+                <div class="flex-1 flex flex-col h-full overflow-hidden">
+                    <div class="glass-panel p-6 rounded-2xl flex-1 overflow-y-auto mb-4 relative flex flex-col" id="question-panel">
+                        <!-- Question Text -->
+                        <div class="mb-6">
+                            <h3 id="question-text" class="text-xl sm:text-2xl font-medium text-slate-800 leading-relaxed font-serif">
+                                Loading...
+                            </h3>
+                            <p id="question-subtext" class="text-slate-500 text-sm mt-2 italic hidden"></p>
+                        </div>
+
+                        <!-- Options Container -->
+                        <div id="options-container" class="space-y-3 pb-4">
+                            <!-- Options injected here -->
+                        </div>
+
+                        <!-- Explanation Panel (Hidden initially) -->
+                        <div id="explanation-box" class="hidden mt-6 bg-blue-50 border border-blue-100 rounded-xl p-5 fade-in-up">
+                            <div class="flex items-start gap-3">
+                                <div id="feedback-icon" class="mt-1"></div>
+                                <div>
+                                    <h4 id="feedback-title" class="font-bold text-lg mb-1"></h4>
+                                    <p id="feedback-text" class="text-slate-700 leading-relaxed text-sm"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex-shrink-0">
+                        <button onclick="prevQuestion()" id="btn-prev" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-100 font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                            <i class="fas fa-chevron-left mr-1"></i> Prev
+                        </button>
+                        
+                        <div class="flex gap-2">
+                            <button onclick="markForReview()" id="btn-mark" class="px-4 py-2 rounded-lg text-amber-600 border border-amber-200 hover:bg-amber-50 font-medium text-sm transition-colors">
+                                <i class="far fa-flag mr-1"></i> Flag
+                            </button>
+                        </div>
+
+                        <button onclick="nextQuestion()" id="btn-next" class="bg-slate-800 hover:bg-slate-900 text-white px-8 py-2 rounded-lg font-medium shadow-md transition-all flex items-center gap-2">
+                            Next <i class="fas fa-chevron-right text-xs"></i>
+                        </button>
+                        <button onclick="submitQuiz()" id="btn-submit" class="hidden bg-green-600 hover:bg-green-700 text-white px-8 py-2 rounded-lg font-medium shadow-md transition-all">
+                            Finish Exam
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Nav Sidebar (Desktop) -->
+                <div class="hidden lg:flex flex-col w-72 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex-shrink-0">
+                    <div class="p-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700 flex justify-between items-center">
+                        <span>Navigator</span>
+                        <span class="text-xs font-normal bg-slate-200 px-2 py-1 rounded">150 Items</span>
+                    </div>
+                    <div id="nav-grid" class="flex-1 overflow-y-auto p-4 grid grid-cols-5 gap-2 content-start">
+                        <!-- Grid items injected here -->
+                    </div>
+                    <div class="p-4 border-t border-slate-200 text-xs text-slate-500 grid grid-cols-2 gap-2">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-slate-300"></span> Unanswered</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-blue-600"></span> Current</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-500"></span> Correct</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-red-500"></span> Wrong</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Flagged</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="glass-panel w-full max-w-5xl p-8 rounded-2xl hidden flex flex-col h-[90vh]">
+            <div class="text-center mb-6 flex-shrink-0">
+                <h2 class="text-3xl font-bold text-slate-800">Examination Results</h2>
+                <p class="text-slate-600" id="result-message">Here is how you performed.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 flex-shrink-0">
+                <div class="bg-white p-6 rounded-xl border border-slate-200 text-center shadow-sm">
+                    <div class="text-sm text-slate-500 uppercase font-bold">Total Score</div>
+                    <div id="score-display" class="text-4xl font-bold text-blue-600 my-2">0/150</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-slate-200 text-center shadow-sm">
+                    <div class="text-sm text-slate-500 uppercase font-bold">Percentage</div>
+                    <div id="percent-display" class="text-4xl font-bold text-slate-800 my-2">0%</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl border border-slate-200 text-center shadow-sm">
+                    <div class="text-sm text-slate-500 uppercase font-bold">Status</div>
+                    <div id="status-display" class="text-4xl font-bold text-green-600 my-2">PASSED</div>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-hidden flex flex-col">
+                <h3 class="font-bold text-lg mb-4 text-slate-700 flex-shrink-0">Summary Review</h3>
+                <div id="review-list" class="flex-1 overflow-y-auto pr-2 space-y-4">
+                    <!-- Review items -->
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end flex-shrink-0 gap-3">
+                <button onclick="location.reload()" class="bg-slate-800 text-white px-6 py-3 rounded-xl hover:bg-slate-900 transition-colors">
+                    <i class="fas fa-redo mr-2"></i> Retake Exam
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+<script>
+// --- Audio Context ---
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    if (type === 'click') {
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.05);
+        gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.05);
+    } else if (type === 'correct') {
+        // Cheerful major chord arpeggio
+        const now = audioCtx.currentTime;
+        [523.25, 659.25, 783.99].forEach((freq, i) => { // C Major
+            const osc = audioCtx.createOscillator();
+            const gn = audioCtx.createGain();
+            osc.connect(gn);
+            gn.connect(audioCtx.destination);
+            osc.frequency.value = freq;
+            gn.gain.setValueAtTime(0.05, now + i*0.05);
+            gn.gain.exponentialRampToValueAtTime(0.001, now + i*0.05 + 0.3);
+            osc.start(now + i*0.05);
+            osc.stop(now + i*0.05 + 0.3);
+        });
+    } else if (type === 'wrong') {
+        // Low dull thud
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+        oscillator.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.2);
+    } else if (type === 'submit') {
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(400, audioCtx.currentTime);
+        oscillator.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.5);
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1.0);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 1.0);
+    }
+}
+
+// --- Question Database (UPDATED FROM PDF) ---
+const baseQuestions = [
+    // VERBAL - Grammar & Correct Usage
+    { category: "Verbal Ability", question: "The list of qualified applicants, together with their supporting documents, ______ submitted to the HR department yesterday.", options: ["was", "were", "are", "have been"], answer: 0, explanation: "The subject is 'list' (singular). The phrase 'together with...' is parenthetical and does not change the number of the subject." },
+    { category: "Verbal Ability", question: "Neither the director nor the division chiefs ______ about the sudden cancellation of the seminar.", options: ["know", "knows", "was knowing", "has known"], answer: 0, explanation: "In 'neither/nor' constructions, the verb agrees with the subject closer to it. 'Division chiefs' is plural." },
+    { category: "Verbal Ability", question: "The board of directors ______ divided in their decision regarding the merger.", options: ["is", "are", "was", "has been"], answer: 1, explanation: "Collective nouns take a plural verb when the members are acting individually (indicated by 'their decision')." },
+    { category: "Verbal Ability", question: "Select the error in the sentence: 'The new guidelines for the procurement process *requires* strict adherence to transparency standards.'", options: ["guidelines", "process", "requires", "standards"], answer: 2, explanation: "The subject is 'guidelines' (plural), so the verb should be 'require,' not 'requires'." },
+    { category: "Verbal Ability", question: "If I ______ the regional director, I would implement a four-day workweek immediately.", options: ["am", "was", "were", "have been"], answer: 2, explanation: "This is a past unreal conditional (subjunctive mood). 'Were' is used for all subjects in the 'if' clause." },
+    { category: "Verbal Ability", question: "The memoranda ______ issued late yesterday afternoon.", options: ["is", "was", "were", "has been"], answer: 2, explanation: "'Memoranda' is the plural form of 'memorandum'." },
+    { category: "Verbal Ability", question: "Between you and ______, I think the budget proposal needs significant revision.", options: ["I", "me", "myself", "mine"], answer: 1, explanation: "'Between' is a preposition. Pronouns following prepositions must be in the objective case ('me'), not subjective ('I')." },
+    { category: "Verbal Ability", question: "One of the staff members ______ lost his identification card.", options: ["have", "has", "are", "were"], answer: 1, explanation: "The subject is 'One,' which is singular. The prepositional phrase 'of the staff members' does not affect the verb." },
+    { category: "Verbal Ability", question: "The number of enrollees in the program ______ increasing every year.", options: ["is", "are", "were", "have been"], answer: 0, explanation: "'The number' is specific and singular. Conversely, 'A number' implies 'many' and is plural." },
+    { category: "Verbal Ability", question: "He is one of those employees who ______ always punctual.", options: ["is", "are", "was", "be"], answer: 1, explanation: "The relative pronoun 'who' refers to 'employees' (plural), so the verb must be plural." },
+    { category: "Verbal Ability", question: "The criteria for the award ______ clearly defined in the circular.", options: ["is", "was", "are", "has been"], answer: 2, explanation: "'Criteria' is plural; 'criterion' is singular." },
+    { category: "Verbal Ability", question: "Which sentence demonstrates correct modifier placement?", options: ["We saw the Mayon Volcano flying over Albay.", "Flying over Albay, the Mayon Volcano was seen.", "Flying over Albay, we saw the Mayon Volcano.", "We saw the Mayon Volcano, flying over Albay."], answer: 2, explanation: "Option C correctly associates the modifier 'Flying over Albay' with 'we', unlike other options which imply the volcano is flying." },
+    { category: "Verbal Ability", question: "Everyone ______ required to wear their ID inside the premises.", options: ["are", "were", "is", "have been"], answer: 2, explanation: "Indefinite pronouns like 'everyone', 'everybody', and 'anyone' are grammatically singular." },
+    { category: "Verbal Ability", question: "The Commission, along with its regional offices, ______ the examination annually.", options: ["conduct", "conducts", "conducting", "have conducted"], answer: 1, explanation: "'Along with' is an intervening phrase. The subject 'Commission' remains singular." },
+    { category: "Verbal Ability", question: "Which sentence demonstrates correct parallelism?", options: ["The duties are filing, typing, and to answer calls.", "The duties are to file, to type, and answering calls.", "The duties are filing, typing, and answering calls.", "The duties are filing, to type, and answer calls."], answer: 2, explanation: "All items in the series must follow the same form (gerunds in this case)." },
+    { category: "Verbal Ability", question: "Filipino Grammar: Siya ay ______ ng kape kaninang umaga.", options: ["uminom", "uminum", "nag-inom", "mag-inom"], answer: 0, explanation: "'Uminom' is the correct past tense focus on the actor. 'Nag-inom' usually implies drinking alcohol." },
+    { category: "Verbal Ability", question: "Filipino Grammar: Ibigay mo ang libro ______ Pedro.", options: ["nang", "ng", "kay", "kila"], answer: 2, explanation: "'Kay' is used for singular proper nouns marking the beneficiary/recipient." },
+    { category: "Verbal Ability", question: "Filipino Grammar: Tumakbo siya ______ mabilis.", options: ["ng", "nang", "na", "kung"], answer: 1, explanation: "'Nang' answers the question 'how' (paano) or modifies the verb/adverb." },
+    { category: "Verbal Ability", question: "Filipino Grammar: Masaya ______ ang buhay probinsya.", options: ["din", "rin", "daw", "raw"], answer: 1, explanation: "'Rin' is used because the preceding word 'Masaya' ends in a vowel. 'Din' is for consonants." },
+    { category: "Verbal Ability", question: "Identify the Error: 'Irregardless of the outcome, the committee will submit the report.'", options: ["Irregardless", "outcome", "committee", "submit"], answer: 0, explanation: "'Irregardless' is non-standard; the correct word is 'Regardless'." },
+    { category: "Verbal Ability", question: "The phenomenon of climate change ______ global concern.", options: ["affect", "affects", "affecting", "effect"], answer: 1, explanation: "'Phenomenon' is singular. 'Affect' is the verb; 'Effect' is usually the noun." },
+    { category: "Verbal Ability", question: "I cannot ______ to his proposal due to the budget constraints.", options: ["accede", "exceed", "concede", "proceed"], answer: 0, explanation: "'Accede' means to agree to a demand or treaty." },
+    { category: "Verbal Ability", question: "The feedback from the clients ______ vital for improvement.", options: ["are", "were", "is", "have been"], answer: 2, explanation: "'Feedback' is a mass noun (uncountable) and takes a singular verb." },
+    { category: "Verbal Ability", question: "We have ______ applicants than we expected.", options: ["applicant", "fewer", "less", "applying"], answer: 1, explanation: "'Fewer' is used for countable nouns (applicants); 'Less' is for uncountable nouns." },
+    { category: "Verbal Ability", question: "Please ______ the documents on the table.", options: ["lie", "lay", "laid", "lain"], answer: 1, explanation: "'Lay' is transitive (requires an object: documents). 'Lie' is intransitive." },
+    { category: "Verbal Ability", question: "He has ______ in bed all day.", options: ["laid", "lay", "lain", "lied"], answer: 2, explanation: "Past participle of 'lie' (to recline) is 'lain'. 'Laid' is past participle of 'lay' (to place)." },
+    { category: "Verbal Ability", question: "The consensus ______ that the project be delayed.", options: ["were", "are", "is", "have"], answer: 2, explanation: "'Consensus' is singular." },
+    { category: "Verbal Ability", question: "The shears ______ used to cut the ribbon.", options: ["is", "was", "are", "has"], answer: 2, explanation: "Tools with two parts (scissors, shears, pliers) are plural." },
+
+    // VERBAL - Vocabulary
+    { category: "Verbal Ability", question: "OBFUSCATE (Synonym)", options: ["Clarify", "Confuse", "Illuminate", "Radiate"], answer: 1, explanation: "To obfuscate is to render obscure, unclear, or unintelligible." },
+    { category: "Verbal Ability", question: "AMELIORATE (Antonym)", options: ["Improve", "Worsen", "Mitigate", "Relieve"], answer: 1, explanation: "Ameliorate means to make something bad better. The opposite is to worsen." },
+    { category: "Verbal Ability", question: "EPHEMERAL (Synonym)", options: ["Permanent", "Transient", "Enduring", "Eternal"], answer: 1, explanation: "Ephemeral means lasting a very short time; transient." },
+    { category: "Verbal Ability", question: "CANDID (Synonym)", options: ["Guarded", "Frank", "Secretive", "Evasive"], answer: 1, explanation: "Candid means truthful and straightforward." },
+    { category: "Verbal Ability", question: "PRAGMATIC (Antonym)", options: ["Practical", "Realistic", "Idealistic", "Sensible"], answer: 2, explanation: "Pragmatic deals with things sensibly/realistically. Idealistic focuses on unrealizable ideals." },
+    { category: "Verbal Ability", question: "NEFARIOUS (Synonym)", options: ["Wicked", "Virtuous", "Innocent", "Gentle"], answer: 0, explanation: "Nefarious means wicked or criminal." },
+    { category: "Verbal Ability", question: "TACITURN (Synonym)", options: ["Talkative", "Reserved", "Boisterous", "Loquacious"], answer: 1, explanation: "Taciturn means reserved or uncommunicative in speech." },
+    { category: "Verbal Ability", question: "LOQUACIOUS (Antonym)", options: ["Garrulous", "Silent", "Chatty", "Verbose"], answer: 1, explanation: "Loquacious means tending to talk a great deal. Silent is the opposite." },
+    { category: "Verbal Ability", question: "UBIQUITOUS (Synonym)", options: ["Rare", "Omnipresent", "Scarce", "Hidden"], answer: 1, explanation: "Ubiquitous means present, appearing, or found everywhere." },
+    { category: "Verbal Ability", question: "ESOTERIC (Synonym)", options: ["Common", "Abstruse", "Simple", "Obvious"], answer: 1, explanation: "Esoteric means intended for or likely to be understood by only a small number of people. Abstruse is a synonym." },
+
+    // VERBAL - Paragraph Organization
+    { category: "Verbal Ability", question: "Arrange the sentences: (1) However, the government has implemented measures. (2) The Philippines is highly vulnerable to climate change. (3) These impacts include stronger typhoons. (4) Therefore, community cooperation is vital.", options: ["2, 3, 1, 4", "2, 1, 3, 4", "3, 2, 1, 4", "1, 2, 3, 4"], answer: 0, explanation: "2 sets context. 3 elaborates on impacts. 1 introduces solution/contrast. 4 concludes." },
+    { category: "Verbal Ability", question: "Arrange the sentences: (1) It also improves mental health. (2) Regular exercise offers numerous benefits. (3) For instance, it strengthens the heart. (4) Thus, everyone should make time for it.", options: ["2, 1, 3, 4", "2, 3, 1, 4", "1, 2, 3, 4", "4, 2, 3, 1"], answer: 1, explanation: "2 is Topic Sentence. 3 gives physical example. 1 gives mental example ('also'). 4 is conclusion." },
+
+    // ANALYTICAL - Analogy
+    { category: "Analytical Ability", question: "COMPASS : DIRECTION :: CALIPER : ______", options: ["Speed", "Diameter", "Weight", "Volume"], answer: 1, explanation: "Instrument used to measure X. A compass indicates direction; a caliper measures diameter/thickness." },
+    { category: "Analytical Ability", question: "ARCHIPELAGO : ISLANDS :: FOREST : ______", options: ["Animals", "Trees", "Jungle", "Leaves"], answer: 1, explanation: "Whole consists of Parts (Group). An archipelago is a group of islands; a forest is a group of trees." },
+    { category: "Analytical Ability", question: "QUAKE : TREMBLE :: DECEPTION : ______", options: ["Trick", "Truth", "Fear", "Force"], answer: 0, explanation: "Synonym/Effect relationship." },
+    { category: "Analytical Ability", question: "INDIGENT : WEALTHY :: GAUNT : ______", options: ["Thin", "Obese", "Starving", "Weak"], answer: 1, explanation: "Antonyms. Indigent (poor) opposes wealthy. Gaunt (thin) opposes obese." },
+    { category: "Analytical Ability", question: "PEDIATRICIAN : CHILDREN :: DERMATOLOGIST : ______", options: ["Bones", "Skin", "Nerves", "Lungs"], answer: 1, explanation: "Specialist to Field." },
+    { category: "Analytical Ability", question: "BOUQUET : FLOWERS :: FLOCK : ______", options: ["Dogs", "Sheep", "Cats", "Wolves"], answer: 1, explanation: "Collective Noun. A bouquet is a bunch of flowers; a flock is a group of sheep." },
+    { category: "Analytical Ability", question: "CORPOREAL : SPIRITUAL :: CONCRETE : ______", options: ["Solid", "Abstract", "Real", "Cement"], answer: 1, explanation: "Antonyms. Corporeal (bodily) opposes spiritual. Concrete opposes abstract." },
+    { category: "Analytical Ability", question: "GILLS : FISH :: LUNGS : ______", options: ["Water", "Mammal", "Fin", "Boat"], answer: 1, explanation: "Organ for breathing." },
+
+    // ANALYTICAL - Logic & Data
+    { category: "Analytical Ability", question: "Syllogism: All mammals have hearts. All whales are mammals. Therefore...", options: ["All whales have hearts", "Some whales have hearts", "No whales have hearts", "Only mammals have hearts"], answer: 0, explanation: "Deductive logic: If A contains B, and B contains C, then A contains C." },
+    { category: "Analytical Ability", question: "Syllogism: No insects are birds. Some animals are insects. Therefore...", options: ["All animals are birds", "Some animals are not birds", "No animals are birds", "All birds are animals"], answer: 1, explanation: "Since some animals are insects, and insects cannot be birds, that specific group of animals cannot be birds." },
+    { category: "Analytical Ability", question: "Assumption: 'The new highway will reduce traffic congestion in the city.' What is the implicit assumption?", options: ["The highway is expensive", "Traffic congestion is a problem in the city", "People prefer trains", "Cars are banned"], answer: 1, explanation: "The statement implies a solution to an existing problem. It assumes the problem (congestion) exists." },
+    { category: "Analytical Ability", question: "Logic Ordering: A is ahead of B. C is behind B. D is ahead of A. E is behind C. Who is last?", options: ["A", "B", "C", "E"], answer: 3, explanation: "Order: D -> A -> B -> C -> E. E is last." },
+    { category: "Analytical Ability", question: "Data: Pie chart shows Rent is 25%. Total Income is P20,000. How much is Rent?", options: ["P4,000", "P5,000", "P6,000", "P3,000"], answer: 1, explanation: "20,000 * 0.25 = 5,000." },
+    { category: "Analytical Ability", question: "Data: Male Employees = 120, Female Employees = 80. What is the ratio of Female to Male?", options: ["2:3", "3:2", "4:5", "1:2"], answer: 0, explanation: "80:120 -> divide both by 40 -> 2:3." },
+
+    // NUMERICAL ABILITY
+    { category: "Numerical Ability", question: "Series: 1, 4, 9, 16, 25, ...", options: ["30", "36", "49", "32"], answer: 1, explanation: "Squares of integers (1^2, 2^2, 3^2... 6^2=36)." },
+    { category: "Numerical Ability", question: "Series: 3, 6, 12, 24, 48, ...", options: ["60", "72", "96", "100"], answer: 2, explanation: "Geometric series (x2). 48 * 2 = 96." },
+    { category: "Numerical Ability", question: "Series: 2, 5, 10, 17, 26, ...", options: ["35", "37", "39", "40"], answer: 1, explanation: "n^2 + 1 pattern. Next is 6^2 + 1 = 37." },
+    { category: "Numerical Ability", question: "Series: 5, 10, 8, 16, 14, ...", options: ["28", "12", "20", "18"], answer: 0, explanation: "Mixed operations (x2, -2, x2, -2). Next is 14 * 2 = 28." },
+    { category: "Numerical Ability", question: "Series: 1, 1, 2, 3, 5, 8, ...", options: ["11", "13", "15", "10"], answer: 1, explanation: "Fibonacci sequence (sum of previous two). 5 + 8 = 13." },
+    { category: "Numerical Ability", question: "Word Problem: A father is 3 times as old as his son. In 12 years, he will be twice as old. How old is the son now?", options: ["10", "12", "15", "20"], answer: 1, explanation: "3s + 12 = 2(s + 12) -> 3s + 12 = 2s + 24 -> s = 12." },
+    { category: "Numerical Ability", question: "Word Problem: A can finish a job in 4 hours, B in 6 hours. Together?", options: ["2.4 hours", "5 hours", "2 hours", "3.2 hours"], answer: 0, explanation: "1/4 + 1/6 = 3/12 + 2/12 = 5/12. T = 12/5 = 2.4 hours." },
+    { category: "Numerical Ability", question: "Word Problem: A shirt costs P500. Sale is 20% off. Price now?", options: ["P350", "P400", "P450", "P300"], answer: 1, explanation: "500 * 0.20 = 100. 500 - 100 = 400." },
+    { category: "Numerical Ability", question: "Word Problem: A car travels 180 km in 3 hours. Average speed?", options: ["50 kph", "60 kph", "70 kph", "80 kph"], answer: 1, explanation: "Rate = Distance / Time. 180 / 3 = 60 kph." },
+
+    // GENERAL INFORMATION
+    { category: "General Information", question: "The legislative power shall be vested in the ______ which shall consist of a Senate and a House of Representatives.", options: ["Congress of the Philippines", "Supreme Court", "President", "Ombudsman"], answer: 0, explanation: "Constitution Art VI Sec 1." },
+    { category: "General Information", question: "Which Article of the 1987 Constitution contains the Bill of Rights?", options: ["Article I", "Article II", "Article III", "Article IV"], answer: 2, explanation: "Article III is the Bill of Rights." },
+    { category: "General Information", question: "The right against double jeopardy means:", options: ["You cannot be accused twice", "You cannot be punished for the same offense twice", "You have two chances to appeal", "You can be tried in two courts"], answer: 1, explanation: "No person shall be twice put in jeopardy of punishment for the same offense." },
+    { category: "General Information", question: "Who has the sole power to declare the existence of a state of war?", options: ["The President", "The Senate", "The Congress (voting jointly)", "The Supreme Court"], answer: 2, explanation: "Article VI, Section 23(1)." },
+    { category: "General Information", question: "The National Territory is defined in which Article?", options: ["Article I", "Article II", "Article III", "Article IV"], answer: 0, explanation: "Article I defines the National Territory." },
+    { category: "General Information", question: "Under RA 6713, public officials must respond to letters/telegrams within ______ working days.", options: ["10", "15", "20", "30"], answer: 1, explanation: "Section 5(a) of RA 6713 requires response within 15 working days." },
+    { category: "General Information", question: "'Simple Living' means public officials shall lead lives appropriate to their ______.", options: ["Desires", "Needs", "Positions and income", "Social status"], answer: 2, explanation: "Section 4(h) of RA 6713: Simple Living." },
+    { category: "General Information", question: "Which law provides for an Ecological Solid Waste Management Program?", options: ["RA 9003", "RA 8749", "RA 9275", "RA 6969"], answer: 0, explanation: "RA 9003 is the Ecological Solid Waste Management Act of 2000." },
+    { category: "General Information", question: "Under RA 9003, segregation of waste must be primarily conducted at the:", options: ["Source", "Dumpsite", "Truck", "River"], answer: 0, explanation: "Segregation shall be conducted at the source." },
+    { category: "General Information", question: "RA 8749 is also known as:", options: ["Clean Water Act", "Clean Air Act of 1999", "Solid Waste Act", "Mining Act"], answer: 1, explanation: "RA 8749 is the Philippine Clean Air Act of 1999." }
+];
+
+// GENERATOR FOR REMAINING ITEMS (Total 150)
+function generateCompleteExam() {
+    let examSet = [...baseQuestions]; // Start with the 64 static items
+    
+    // We need 150 total. Currently have ~64. Need ~86 more.
+    // Fill with Math/Logic/Verbal procedural gen
+
+    // 1. Numerical Generation (Target: +30 items)
+    for(let i=0; i<30; i++) {
+        const type = Math.floor(Math.random() * 3);
+        if(type === 0) { // Percentages
+            const total = (Math.floor(Math.random() * 20) + 1) * 50;
+            const pct = (Math.floor(Math.random() * 10) + 1) * 5;
+            const ans = (total * pct) / 100;
+            examSet.push({
+                category: "Numerical Ability",
+                question: `What is ${pct}% of ${total}?`,
+                options: shuffleArray([`${ans}`, `${ans * 1.5}`, `${ans / 2}`, `${ans + 10}`]),
+                answer: 0, // Will be shuffled later
+                explanation: `Calculation: ${total} × ${pct/100} = ${ans}`
+            });
+        } else if(type === 1) { // Simple Algebra
+            const x = Math.floor(Math.random() * 10) + 2;
+            const y = Math.floor(Math.random() * 20) + 5;
+            const res = 2*x + y;
+            examSet.push({
+                category: "Numerical Ability",
+                question: `If x = ${x} and y = ${y}, what is the value of 2x + y?`,
+                options: shuffleArray([`${res}`, `${res+2}`, `${res-2}`, `${res*2}`]),
+                answer: 0,
+                explanation: `Substitute values: 2(${x}) + ${y} = ${2*x} + ${y} = ${res}`
+            });
+        } else { // Word Problem (Ratio)
+            const ratioA = Math.floor(Math.random() * 3) + 2;
+            const ratioB = Math.floor(Math.random() * 3) + 2;
+            const factor = Math.floor(Math.random() * 5) + 2;
+            const total = (ratioA + ratioB) * factor;
+            const valA = ratioA * factor;
+            examSet.push({
+                category: "Numerical Ability",
+                question: `Two numbers are in the ratio ${ratioA}:${ratioB}. If their sum is ${total}, what is the smaller number?`,
+                options: shuffleArray([`${Math.min(valA, total-valA)}`, `${Math.max(valA, total-valA)}`, `${total/2}`, `${factor}`]),
+                answer: 0,
+                explanation: `Total parts = ${ratioA}+${ratioB}=${ratioA+ratioB}. One part = ${total}/${ratioA+ratioB}=${factor}. Smaller part = ${Math.min(ratioA,ratioB)} × ${factor} = ${Math.min(valA, total-valA)}.`
+            });
+        }
+    }
+
+    // 2. Verbal Generation (Target: +30 items)
+    const analogies = [
+        ["Teacher", "School", "Nurse", "Hospital"], ["Fish", "Swim", "Bird", "Fly"], 
+        ["Fire", "Hot", "Ice", "Cold"], ["Hungry", "Eat", "Thirsty", "Drink"],
+        ["Pen", "Write", "Knife", "Cut"], ["Camera", "Picture", "Oven", "Bake"]
+    ];
+    for(let i=0; i<30; i++) {
+        const pair = analogies[i % analogies.length];
+        examSet.push({
+            category: "Verbal Ability",
+            question: `ANALOGY: ${pair[0]} is to ${pair[1]} as ${pair[2]} is to ______?`,
+            options: shuffleArray([pair[3], "Walk", "Food", "Tool"]),
+            answer: 0,
+            explanation: `Relationship: ${pair[0]} is found in/does ${pair[1]}. Similarly, ${pair[2]} matches ${pair[3]}.`
+        });
+    }
+
+    // 3. Analytical Generation (Target: +30 items)
+    for(let i=0; i<30; i++) {
+        const start = Math.floor(Math.random() * 10) + 1;
+        const jump = Math.floor(Math.random() * 5) + 2;
+        examSet.push({
+            category: "Analytical Ability",
+            question: `Find the next number: ${start}, ${start+jump}, ${start+jump*2}, ${start+jump*3}, ...`,
+            options: shuffleArray([`${start+jump*4}`, `${start+jump*4 + 1}`, `${start+jump*3 + 1}`, `${start+jump*5}`]),
+            answer: 0,
+            explanation: `The pattern is a constant addition of ${jump}.`
+        });
+    }
+
+    // Ensure we have exact correct answers mapped after text generation
+    examSet.forEach(q => {
+        // Only shuffle options for generated items (or items not already shuffled)
+        if(q.question.includes("ANALOGY") || q.question.includes("Find the next") || q.question.includes("If x =") || q.question.includes("ratio")) {
+             const correctText = q.options[q.answer]; 
+             // Fisher-Yates Shuffle
+             for (let i = q.options.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [q.options[i], q.options[j]] = [q.options[j], q.options[i]];
+             }
+             q.answer = q.options.indexOf(correctText);
+        }
+    });
+
+    return examSet.slice(0, 150); // Hard cut to 150
+}
+
+function shuffleArray(array) {
+    // Helper to return a new shuffled array without modifying original reference inside the loop logic
+    return array; 
+}
+
+
+// --- Game State ---
+let questions = [];
+let currentState = {
+    currentIndex: 0,
+    answers: {}, // Key: index, Value: optionIndex
+    score: 0,
+    flagged: {},
+    timeRemaining: 3 * 3600 + 10 * 60,
+    timerId: null,
+    isFinished: false
+};
+
+// --- Core Logic ---
+
+function startQuiz() {
+    questions = generateCompleteExam();
+    document.getElementById('start-screen').classList.add('hidden');
+    document.getElementById('quiz-interface').classList.remove('hidden');
+    document.getElementById('quiz-interface').classList.add('flex');
+    document.getElementById('timer-display').classList.remove('hidden');
+    
+    // Initialize Navigation Grid
+    const navGrid = document.getElementById('nav-grid');
+    navGrid.innerHTML = '';
+    questions.forEach((_, idx) => {
+        const btn = document.createElement('button');
+        btn.id = `nav-${idx}`;
+        btn.className = `w-full aspect-square rounded flex items-center justify-center text-xs font-bold bg-slate-100 text-slate-500 hover:bg-slate-200`;
+        btn.innerText = idx + 1;
+        btn.onclick = () => loadQuestion(idx);
+        navGrid.appendChild(btn);
+    });
+
+    startTimer();
+    loadQuestion(0);
+}
+
+function loadQuestion(index) {
+    currentState.currentIndex = index;
+    const q = questions[index];
+    const isAnswered = currentState.answers.hasOwnProperty(index);
+
+    // Update Header
+    document.getElementById('current-q-num').innerText = index + 1;
+    document.getElementById('category-badge').innerText = q.category;
+    document.getElementById('running-score').innerText = currentState.score;
+    
+    // Update Progress
+    const pct = ((Object.keys(currentState.answers).length) / 150) * 100;
+    document.getElementById('progress-bar').style.width = `${pct}%`;
+
+    // Render Question
+    document.getElementById('question-text').innerText = q.question;
+    document.getElementById('question-subtext').classList.add('hidden'); // Optional helper text
+
+    // Render Options
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+
+    q.options.forEach((opt, optIdx) => {
+        const btn = document.createElement('div');
+        let classes = "option-card w-full p-4 rounded-xl border border-slate-200 bg-white cursor-pointer flex items-center gap-3 relative";
+        
+        // Immediate Feedback Logic
+        if (isAnswered) {
+            btn.classList.add('disabled');
+            const userAns = currentState.answers[index];
+            
+            if (optIdx === q.answer) {
+                classes += " correct-answer"; // Always highlight correct green
+            } else if (optIdx === userAns && userAns !== q.answer) {
+                classes += " wrong-answer"; // Highlight wrong red
+            } else {
+                classes += " dimmed";
+            }
+        }
+
+        btn.className = classes;
+        
+        if (!isAnswered && !currentState.isFinished) {
+            btn.onclick = () => handleAnswer(index, optIdx);
+        }
+
+        // Icon Logic
+        let iconHtml = `<div class="w-6 h-6 rounded-full border-2 border-slate-300 flex items-center justify-center flex-shrink-0 text-xs text-slate-400 font-bold">${String.fromCharCode(65 + optIdx)}</div>`;
+        
+        if (isAnswered) {
+            if (optIdx === q.answer) {
+                iconHtml = `<div class="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center flex-shrink-0"><i class="fas fa-check text-xs"></i></div>`;
+            } else if (optIdx === currentState.answers[index]) {
+                iconHtml = `<div class="w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center flex-shrink-0"><i class="fas fa-times text-xs"></i></div>`;
+            }
+        }
+
+        btn.innerHTML = `${iconHtml}<span class="text-slate-700 font-medium">${opt}</span>`;
+        container.appendChild(btn);
+    });
+
+    // Render Explanation if answered
+    const expBox = document.getElementById('explanation-box');
+    if (isAnswered) {
+        const isCorrect = currentState.answers[index] === q.answer;
+        expBox.classList.remove('hidden');
+        
+        const titleEl = document.getElementById('feedback-title');
+        const textEl = document.getElementById('feedback-text');
+        const iconEl = document.getElementById('feedback-icon');
+
+        if (isCorrect) {
+            titleEl.innerText = "Correct!";
+            titleEl.className = "font-bold text-lg mb-1 text-green-700";
+            expBox.className = "mt-6 bg-green-50 border border-green-200 rounded-xl p-5 fade-in-up";
+            iconEl.innerHTML = `<i class="fas fa-check-circle text-2xl text-green-600"></i>`;
+        } else {
+            titleEl.innerText = "Incorrect";
+            titleEl.className = "font-bold text-lg mb-1 text-red-700";
+            expBox.className = "mt-6 bg-red-50 border border-red-200 rounded-xl p-5 fade-in-up";
+            iconEl.innerHTML = `<i class="fas fa-times-circle text-2xl text-red-600"></i>`;
+        }
+        textEl.innerText = q.explanation;
+    } else {
+        expBox.classList.add('hidden');
+    }
+
+    // Button States
+    document.getElementById('btn-prev').disabled = index === 0;
+    
+    // Update Nav Grid Highlights
+    updateNavGrid();
+}
+
+function handleAnswer(qIndex, optIndex) {
+    if (currentState.answers.hasOwnProperty(qIndex)) return;
+
+    currentState.answers[qIndex] = optIndex;
+    const isCorrect = optIndex === questions[qIndex].answer;
+    
+    if (isCorrect) {
+        currentState.score++;
+        playSound('correct');
+    } else {
+        playSound('wrong');
+    }
+
+    // Refresh view to show feedback
+    loadQuestion(qIndex);
+}
+
+function updateNavGrid() {
+    questions.forEach((_, i) => {
+        const btn = document.getElementById(`nav-${i}`);
+        btn.className = `w-full aspect-square rounded flex items-center justify-center text-xs font-bold transition-all `;
+        
+        if (i === currentState.currentIndex) {
+            btn.classList.add('ring-2', 'ring-blue-600', 'z-10');
+        }
+
+        if (currentState.answers.hasOwnProperty(i)) {
+            const isCorrect = currentState.answers[i] === questions[i].answer;
+            btn.classList.add(isCorrect ? 'bg-green-500' : 'bg-red-500', 'text-white');
+        } else if (currentState.flagged[i]) {
+            btn.classList.add('bg-amber-400', 'text-white');
+        } else {
+            btn.classList.add('bg-slate-100', 'text-slate-500', 'hover:bg-slate-200');
+        }
+    });
+}
+
+function nextQuestion() {
+    if (currentState.currentIndex < 149) loadQuestion(currentState.currentIndex + 1);
+}
+
+function prevQuestion() {
+    if (currentState.currentIndex > 0) loadQuestion(currentState.currentIndex - 1);
+}
+
+function markForReview() {
+    currentState.flagged[currentState.currentIndex] = !currentState.flagged[currentState.currentIndex];
+    updateNavGrid();
+}
+
+function startTimer() {
+    const display = document.getElementById('time-remaining');
+    currentState.timerId = setInterval(() => {
+        currentState.timeRemaining--;
+        
+        const h = Math.floor(currentState.timeRemaining / 3600);
+        const m = Math.floor((currentState.timeRemaining % 3600) / 60);
+        const s = currentState.timeRemaining % 60;
+        
+        display.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        
+        if(currentState.timeRemaining <= 0) submitQuiz();
+        if(currentState.timeRemaining < 300) display.classList.add('timer-warning');
+
+    }, 1000);
+}
+
+function submitQuiz() {
+    if(!currentState.isFinished && !confirm("Finish exam and view results?")) return;
+    
+    currentState.isFinished = true;
+    clearInterval(currentState.timerId);
+    playSound('submit');
+
+    document.getElementById('quiz-interface').classList.add('hidden');
+    document.getElementById('result-screen').classList.remove('hidden');
+    document.getElementById('result-screen').classList.add('flex');
+    document.getElementById('timer-display').classList.add('hidden');
+
+    // Stats
+    const finalScore = currentState.score;
+    const percentage = Math.round((finalScore / 150) * 100);
+    const passed = percentage >= 80;
+
+    document.getElementById('score-display').innerText = `${finalScore}/150`;
+    document.getElementById('percent-display').innerText = `${percentage}%`;
+    const status = document.getElementById('status-display');
+    status.innerText = passed ? "PASSED" : "FAILED";
+    status.className = `text-4xl font-bold my-2 ${passed ? 'text-green-600' : 'text-red-600'}`;
+
+    // Summary List
+    const list = document.getElementById('review-list');
+    list.innerHTML = '';
+    
+    questions.forEach((q, i) => {
+        const userAns = currentState.answers[i];
+        const correct = userAns === q.answer;
+        const skipped = userAns === undefined;
+
+        const row = document.createElement('div');
+        row.className = `bg-white p-4 rounded-lg border-l-4 ${correct ? 'border-green-500' : (skipped ? 'border-slate-300' : 'border-red-500')} shadow-sm`;
+        
+        row.innerHTML = `
+            <div class="flex justify-between mb-2">
+                <span class="font-bold text-xs text-slate-500">Q${i+1} - ${q.category}</span>
+                ${correct ? '<span class="text-green-600 font-bold text-xs">Correct</span>' : (skipped ? '<span class="text-slate-400 text-xs">Skipped</span>' : '<span class="text-red-500 font-bold text-xs">Wrong</span>')}
+            </div>
+            <p class="text-sm font-medium mb-2">${q.question}</p>
+            <div class="text-xs text-slate-600 bg-slate-50 p-2 rounded">
+                <strong>Answer:</strong> ${q.options[q.answer]} <br>
+                <span class="italic text-slate-500">${q.explanation}</span>
+            </div>
+        `;
+        list.appendChild(row);
+    });
+}
+</script>
+</body>
+</html>
